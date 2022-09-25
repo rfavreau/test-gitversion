@@ -29,10 +29,14 @@ branches:
     tracks-release-branches: false
     is-release-branch: false
   pull-request:
-    tag: rc
-    mode: ContinuousDeployment
-    increment: Inherit
     regex: (origin/)?(pull|pull\-requests|pr)[/-]
+    mode: ContinuousDeployment
+    tag: rc
+    increment: Inherit
+    prevent-increment-of-merged-branch-version: true
+    track-merge-target: false
+    tracks-release-branches: false
+    is-release-branch: true
   hotfix:
     regex: (origin/)?hotfix(es)?[/-]
   support:
