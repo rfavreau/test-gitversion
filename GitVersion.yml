@@ -2,4 +2,19 @@ mode: ContinuousDelivery
 branches:
   pull-request:
     tag: rc
-    increment: Minor
+    increment: Inherit
+    prevent-increment-of-merged-branch-version: false
+    tag-number-pattern: '[/-](?<number>\d+)'
+    track-merge-target: false
+    regex: ^(pull|pull\-requests|pr)[/-]
+    source-branches:
+    - develop
+    - main
+    - release
+    - feature
+    - support
+    - hotfix
+    tracks-release-branches: false
+    is-release-branch: false
+    is-mainline: false
+    pre-release-weight: 30000
