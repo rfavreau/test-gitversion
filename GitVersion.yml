@@ -1,20 +1,38 @@
-mode: ContinuousDelivery
+assembly-versioning-scheme: MajorMinorPatch
 branches:
-  pull-request:
-    tag: rc
-    increment: Inherit
+  develop:
+    regex: dev(elop)?(ment)?$
+    mode: ContinuousDeployment
+    tag: development
+    increment: Minor
     prevent-increment-of-merged-branch-version: false
-    tag-number-pattern: '[/-](?<number>\d+)'
+    track-merge-target: true
+    tracks-release-branches: true
+    is-release-branch: false
+  release:
+    regex: release?[/-]
+    mode: ContinuousDeployment
+    tag: release
+    #increment: Patch
+    increment: Inherit
+    prevent-increment-of-merged-branch-version: true
     track-merge-target: false
-    regex: ^(pull|pull\-requests|pr)[/-]
-    source-branches:
-    - develop
-    - main
-    - release
-    - feature
-    - support
-    - hotfix
+    tracks-release-branches: false
+    is-release-branch: true
+  feature:
+    regex: feature?[/-]
+    mode: ContinuousDeployment
+    tag: useBranchName
+    increment: Inherit
+    prevent-increment-of-merged-branch-version: true
+    track-merge-target: false
     tracks-release-branches: false
     is-release-branch: false
-    is-mainline: false
-    pre-release-weight: 30000
+  pull-request:
+    tag: rc
+    increment: Patch
+    regex: (origin/)?(pull|pull\-requests|pr)[/-]
+  hotfix:
+    regex: (origin/)?hotfix(es)?[/-]
+  support:
+    regex: (origin/)?support[/-]
