@@ -31,14 +31,74 @@ jobs:
         uses: gittools/actions/gitversion/setup@v0.9.7
         with:
           versionSpec: '5.x'
-          
+      
+      - name: Run a multi-line script
+        run: |
+          git config --global user.name "$BUILD_REQUESTEDFOR"
+          git config --global user.email "$BUILD_REQUESTEDFOREMAIL"
+
+          # Build from PR
+          if [ "${BUILD_REASON}" == "PullRequest" ]; then
+            TITLE=$(az repos pr show --id ${SYSTEM_PULLREQUEST_PULLREQUESTID} | jq -r '.title')
+
+            # Check the PR title to find 'release x.y.z'
+            if [[ ${TITLE,,}  =~ release[^0-9]*([0-9]+\.[0-9]+\.{0,1}[0-9]*) ]]; then
+              # Add 'next-version' to GitVersion setting file
+              echo -e "\nnext-version: ${BASH_REMATCH[1]}" >> ./GitVersion.yml
+
+            # Check the PR source branch like 'feature'
+            elif [ $(echo ${SYSTEM_PULLREQUEST_SOURCEBRANCH} | grep -c '^refs/heads/feature/') -eq 1 ]; then
+              # Add '+semver' to the last commit message
+              git commit --amend -m "$(git log -1 --pretty=%B)" -m "+semver: minor"
+
+              # Update the PR description to add '+semver'. It will be used by the master branch
+              DESCRIPTION=$(az repos pr show --id ${SYSTEM_PULLREQUEST_PULLREQUESTID} | jq '.description')
+              if [ $(echo ${DESCRIPTION} | grep -c '+semver:') -eq 0 ]; then
+                echo az repos pr update --id ${SYSTEM_PULLREQUEST_PULLREQUESTID} --description $(echo ${DESCRIPTION} | sed 's/\\n/" "/g') \"\> GitVersion \# +semver: minor\" | sh
+              fi
+
+            # Check the PR source branch like 'release'
+            elif [ $(echo ${SYSTEM_PULLREQUEST_SOURCEBRANCH} | grep -c '^refs/heads/release/') -eq 1 ]; then
+              RELEASE_VERSION=$(echo ${SYSTEM_PULLREQUEST_SOURCEBRANCH} | cut -d'/' -f4)
+
+              # Add 'next-version' to GitVersion setting file
+              echo -e "\nnext-version: ${RELEASE_VERSION}" >> ./GitVersion.yml
+
+              # Update the PR title to add 'Release x.y.z'. It will be used by the master branch
+              TITLE=$(az repos pr show --id ${SYSTEM_PULLREQUEST_PULLREQUESTID} | jq -r '.title')
+              az repos pr update --id ${SYSTEM_PULLREQUEST_PULLREQUESTID} --title "Release ${RELEASE_VERSION} - ${TITLE}"
+            fi
+
+          # Build from a 'feature' branch
+          elif [ $(echo ${BUILD_SOURCEBRANCH} | grep -c '^refs/heads/feature/') -eq 1 ]; then
+            # Add '+semver' to the last commit message
+            git commit --amend -m "$(git log -1 --pretty=%B)" -m "+semver: minor"
+
+          # Build from a 'release' branch
+          elif [ $(echo ${BUILD_SOURCEBRANCH} | grep -c '^refs/heads/release/') -eq 1 ]; then
+            # Add 'next-version' to GitVersion setting file
+            echo -e "\nnext-version: $(echo ${SYSTEM_PULLREQUEST_SOURCEBRANCH} | cut -d'/' -f4)" >> ./GitVersion.yml
+
+          # Build from master branch
+          elif [ "${BUILD_SOURCEBRANCHNAME}" == "master" ]; then
+            MESSAGE=$(git show-branch --no-name HEAD)
+
+            # Check the commit message to find 'release x.y.z'
+            if [[ ${MESSAGE,,} =~ merged.pr.[0-9]+:.release[^0-9]*([0-9]+\.[0-9]+\.{0,1}[0-9]*) ]]; then
+              # Add 'next-version' to GitVersion setting file
+              echo -e "\nnext-version: ${BASH_REMATCH[1]}" >> ./GitVersion.yml
+            fi
+          fi
+
+
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: export
+
       - name: Determine Version
         uses: gittools/actions/gitversion/execute@v0.9.7
       
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: dotnet-gitversion /showconfig
-
+      
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
         run: |
