@@ -34,6 +34,8 @@ jobs:
       
       - name: Initialize GitVersion
         run: |
+          set -x
+        
           git config --global user.name "$BUILD_REQUESTEDFOR"
           git config --global user.email "$BUILD_REQUESTEDFOREMAIL"
 
