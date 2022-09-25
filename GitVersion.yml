@@ -30,7 +30,8 @@ branches:
     is-release-branch: false
   pull-request:
     tag: rc
-    increment: Patch
+    mode: ContinuousDeployment
+    increment: Inherit
     regex: (origin/)?(pull|pull\-requests|pr)[/-]
   hotfix:
     regex: (origin/)?hotfix(es)?[/-]
