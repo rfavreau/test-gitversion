@@ -32,7 +32,7 @@ jobs:
         with:
           versionSpec: '5.x'
       
-      - name: Run a multi-line script
+      - name: Initialize GitVersion
         run: |
           git config --global user.name "$BUILD_REQUESTEDFOR"
           git config --global user.email "$BUILD_REQUESTEDFOREMAIL"
