@@ -38,6 +38,8 @@ jobs:
           
       - name: Initialize GitVersion
         run: |
+          set -x
+          
           if [ "${GITHUB_EVENT_NAME}" == "pull_request" ]; then
             if [ $(echo ${GITHUB_REF_NAME} | grep -c '^release/') -eq 1 ]; then
               RELEASE_VERSION=$(echo ${GITHUB_REF_NAME} | cut -d'/' -f4)
