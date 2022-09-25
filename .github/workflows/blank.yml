@@ -42,7 +42,7 @@ jobs:
           
           if [ "${GITHUB_EVENT_NAME}" == "pull_request" ]; then
             if [ $(echo ${GITHUB_HEAD_REF} | grep -c '^release/') -eq 1 ]; then
-              RELEASE_VERSION=$(echo ${GITHUB_HEAD_REF} | cut -d'/' -f4)
+              RELEASE_VERSION=$(echo ${GITHUB_HEAD_REF} | cut -d'/' -f2)
               echo -e "\nnext-version: ${RELEASE_VERSION}" >> ./GitVersion.yml
             fi
           fi
