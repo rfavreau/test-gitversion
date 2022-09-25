@@ -36,11 +36,11 @@ jobs:
         run: |
           set -x
         
-          git config --global user.name "$BUILD_REQUESTEDFOR"
-          git config --global user.email "$BUILD_REQUESTEDFOREMAIL"
+          git config --global user.email "${GITHUB_ACTOR}"
+          git config --global user.name "${GITHUB_ACTOR}@users.noreply.github.com"
 
           # Build from PR
-          if [ "${BUILD_REASON}" == "PullRequest" ]; then
+          if [ "${GITHUB_EVENT_NAME}" == "pull_request" ]; then
             TITLE=$(az repos pr show --id ${SYSTEM_PULLREQUEST_PULLREQUESTID} | jq -r '.title')
 
             # Check the PR title to find 'release x.y.z'
